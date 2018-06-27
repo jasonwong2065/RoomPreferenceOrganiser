@@ -1,13 +1,16 @@
 import java.util.ArrayList;
+import java.lang.Comparable;
 
-public class Room {
+public class Room implements Comparable<Room>{
+	private String roomName;
 	private int size; //Number of people this room can hold
 	private ArrayList<Person> occupants;
 	private int happiness; //Number of preferences this room satisfies, max is size
-	public Room(int size) {
+	public Room(int size, String roomName) {
 		occupants = new ArrayList<Person>();
 		this.size = size;
 		this.happiness = 0;
+		this.roomName = roomName;
 	}
 	
 	public boolean isFull() {
@@ -25,7 +28,7 @@ public class Room {
 	public String toString() {
 		String occupantsString = "Happiness: " + getHappiness() + ", Room occupants:\n";
 		for(Person occupant:occupants) {
-			occupantsString += occupant.getName() + " -> " + occupant.getPreferenceName() + " Satisfied: " + occupant.isSatisfied() + "\n";
+			occupantsString += occupant.getName() + "(" + occupant.getIncomingPreferences().size() + ")" + " -> " + occupant.getPreferenceName() + " Satisfied: " + occupant.isSatisfied() + "\n";
 		}
 		return occupantsString;
 	}
@@ -45,6 +48,10 @@ public class Room {
 		return happinessCounter;
 	}
 	
+	public String getRoomName() {
+		return roomName;
+	}
+	
 	public void addPerson(Person newPerson) {
 		for(Person occupant:occupants) {
 			if(occupant.checkSatisfied(newPerson) && !occupant.isSatisfied()) {
@@ -59,6 +66,7 @@ public class Room {
 			}
 		}
 		occupants.add(newPerson);
+		newPerson.assignRoom(roomName);
 	}
 	
 	public void removePerson(Person oldOccupant) {
@@ -72,6 +80,17 @@ public class Room {
 				happiness--;
 			}
 		}
+		oldOccupant.assignRoom(null);
 		occupants.remove(oldOccupant);
+		
+	}
+
+	public int getRemainingVacancies() {
+		return this.size - occupants.size();
+	}
+	
+	@Override
+	public int compareTo(Room other) {
+		return other.getRemainingVacancies() - this.getRemainingVacancies();
 	}
 }
