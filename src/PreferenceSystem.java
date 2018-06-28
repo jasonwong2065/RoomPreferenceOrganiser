@@ -3,30 +3,109 @@ import java.util.PriorityQueue;
 import java.util.HashMap;
 import java.util.Collections;
 import java.util.Comparator;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
 
 public class PreferenceSystem {
 	static private ArrayList<Room> roomList;
 	static private ArrayList<Person> fullList;
 	static private ArrayList<Person> unassignedPeople;
 	static private HashMap<String, Person> peopleHashMap;
-	
+	static private HashMap<String, Person> firstNameMap;
+	static private HashMap<String, Person> lastNameMap;
 	static private PriorityQueue<Room> roomPriorityList; //Sorted by vacancies
 	static private PriorityQueue<Person> personPriorityList;
+	static private ArrayList<String> weirdPreferences;
 	
 	public PreferenceSystem() {
 		roomList = new ArrayList<Room>();
 		fullList = new ArrayList<Person>();
+		unassignedPeople = new ArrayList<Person>();
 		peopleHashMap = new HashMap<String,Person>();
+		firstNameMap = new HashMap<String,Person>();
+		lastNameMap = new HashMap<String,Person>();
+		weirdPreferences = new ArrayList<String>();
 	}
 	
 	public static void main(String[] args) {
 		
 		PreferenceSystem preferenceSystem = new PreferenceSystem();
+		preferenceSystem.scanInput();
+//		preferenceSystem.generateRoomList();
+//		preferenceSystem.generatePersonList();
+//		preferenceSystem.runAlgorithm();
 		
-		preferenceSystem.generateRoomList();
-		preferenceSystem.generatePersonList();
-		preferenceSystem.runAlgorithm();
-		
+	}
+	
+	public void scanInput() {
+	    File file = new File("input1.txt");
+
+	    try {
+
+	        Scanner scanner = new Scanner(file);
+			ArrayList<String> firstNames = new ArrayList<String>();
+			ArrayList<String> lastNames = new ArrayList<String>();
+			ArrayList<String> preference = new ArrayList<String>();
+			ArrayList<String> society = new ArrayList<String>();
+	        while (scanner.hasNextLine()) {
+	            String info = scanner.nextLine();
+	            info = info.toLowerCase(); //Make names lowercase
+	            if(info.trim().isEmpty()) {
+	            	continue;
+	            }
+	            String[] parts = info.split("\\t");
+	            if(parts == null) {
+	            	break;
+	            } else if (parts[0].equals("first name")) {
+	            	continue;
+	            }
+
+            	firstNames.add(parts[0]);
+            	lastNames.add(parts[1]);
+            	preference.add(parts[2]);
+            	society.add(parts[3]);
+	        }
+
+        	for(int i = 0; i < firstNames.size(); i++) {
+        		//Generates all the people
+//TODO: implement last name searching too
+        		String firstName = firstNames.get(i);
+        		String lastName = lastNames.get(i);
+        		String fullName = full(firstName,lastName);
+//        		Person newPerson = new Person(firstName,lastNames.get(i));
+//        		fullList.add(newPerson);
+    			createPerson(fullName, lastName);
+        	}
+        	
+        	for(int i = 0; i < preference.size(); i++) {
+        		//Generates all preferences
+        		String firstName = firstNames.get(i);
+        		String lastName = lastNames.get(i);
+        		String fullName = full(firstName,lastName);
+        		Person from = getPersonFromString(fullName, lastName);
+        		String preferredName = preference.get(i);
+        		if(preferredName.trim().isEmpty()) {
+        			//If they have no preference
+        			continue;
+        		} else {
+        			Person preferredPerson = getPersonFromString(preferredName, lastName);
+        			if(preferredPerson == null) {
+        				//If that person doesn't exist or is weird
+        				weirdPreferences.add(preferredName);
+        				continue;
+        			} else {
+        				from.setPreference(preferredPerson);
+        			}
+        		}
+        	}
+        	
+        	System.out.println(weirdPreferences);
+	        scanner.close();
+	    } 
+	    catch (FileNotFoundException e) {
+	        e.printStackTrace();
+	    }
 	}
 	
 	public void runAlgorithm() {
@@ -74,11 +153,13 @@ public class PreferenceSystem {
 		unassignedPeople.remove(person);
 	}
 	
-	public void createPerson(String name) {
-		Person newPerson = new Person(name);
+	public void createPerson(String firstName, String lastName) {
+		Person newPerson = new Person(firstName, lastName);
 		fullList.add(newPerson);
-		unassignedPeople.add(newPerson);
-		peopleHashMap.put(name, newPerson);
+		String fullName = firstName;
+		peopleHashMap.put(fullName, newPerson);
+		firstNameMap.put(firstName, newPerson);
+		lastNameMap.put(lastName, newPerson);
 	}
 	
 	public void generatePersonPriorityQueue(ArrayList<Person> personList, boolean reverse) {
@@ -93,7 +174,7 @@ public class PreferenceSystem {
 	}
 	
 	public void generatePersonList() {
-		Person testPerson1 = new Person("A");
+/*		Person testPerson1 = new Person("A");
 		Person testPerson2 = new Person("B");
 		Person testPerson3 = new Person("C");
 		Person testPerson4 = new Person("D");
@@ -120,6 +201,7 @@ public class PreferenceSystem {
 		testPerson6.setPreference(testPerson7);
 		testPerson7.setPreference(testPerson4);
 		testPerson8.setPreference(testPerson1);
+		*/
 	}
 	
 	public void generateRoomList() {
@@ -139,8 +221,19 @@ public class PreferenceSystem {
 		from.setPreference(to);
 	}
 	
-	public Person getPersonFromString(String name) {
-		return peopleHashMap.get(name);
+	public String full(String firstName, String lastName) {
+		return firstName + " " + lastName;
+	}
+	
+	public Person getPersonFromString(String firstName, String lastName) {
+//		String fullName = full(firstName, lastName);
+		Person person = peopleHashMap.get(firstName);
+		if(person == null) {
+//TODO deal with only first names, try to group same societies together			
+//			for(Person person:)
+		}
+		
+		return person;
 	}
 	
 }

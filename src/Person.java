@@ -4,20 +4,17 @@ import java.util.ArrayList;
 public class Person{
 	private Person pairingPreference;
 	private boolean satisfied;
-	private String name;
+	private String fullName;
 	private String assignedRoomName; //Null if not in room
 	private ArrayList<Person> incomingPreferences; //Who else wants this person
+	private String firstName;
+	private String lastName;
 	
 	
-	public Person(String name) {
-		this.name = name;
+	public Person(String firstName, String lastName) {
+		this.fullName = firstName;
 		this.satisfied = false;
 		this.incomingPreferences = new ArrayList<Person>();
-	}
-	
-	public Person(String name, Person pairingPreference) {
-		this(name);
-		this.pairingPreference = pairingPreference;
 	}
 	
 	public boolean checkSatisfied(Person other) {
@@ -54,7 +51,7 @@ public class Person{
 	}
 	
 	public String getName() {
-		return this.name;
+		return this.fullName;
 	}
 	
 	public ArrayList<Person> getIncomingPreferences() {
@@ -63,5 +60,13 @@ public class Person{
 	
 	private void addIncomingPreferences(Person incomingPreference) {
 		incomingPreferences.add(incomingPreference);
+	}
+	
+	public boolean isFirstNameEqual(String name) {
+		if(name.equals(firstName)){
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
