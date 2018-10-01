@@ -47,7 +47,7 @@ public class PreferenceSystem {
 			ArrayList<String> firstNames = new ArrayList<String>();
 			ArrayList<String> lastNames = new ArrayList<String>();
 			ArrayList<String> preference = new ArrayList<String>();
-			ArrayList<String> society = new ArrayList<String>();
+			ArrayList<String> preference2 = new ArrayList<String>();
 	        while (scanner.hasNextLine()) {
 	            String info = scanner.nextLine();
 	            info = info.toLowerCase(); //Make names lowercase
@@ -64,43 +64,41 @@ public class PreferenceSystem {
             	firstNames.add(parts[0]);
             	lastNames.add(parts[1]);
             	preference.add(parts[2]);
-            	society.add(parts[3]);
+            	preference2.add(parts[3]);
 	        }
 
         	for(int i = 0; i < firstNames.size(); i++) {
         		//Generates all the people
-//TODO: implement last name searching too
         		String firstName = firstNames.get(i);
         		String lastName = lastNames.get(i);
-        		String fullName = full(firstName,lastName);
-//        		Person newPerson = new Person(firstName,lastNames.get(i));
-//        		fullList.add(newPerson);
-    			createPerson(fullName, lastName);
+    			createPerson(firstName, lastName);
         	}
         	
         	for(int i = 0; i < preference.size(); i++) {
         		//Generates all preferences
         		String firstName = firstNames.get(i);
         		String lastName = lastNames.get(i);
-        		String fullName = full(firstName,lastName);
-        		Person from = getPersonFromString(fullName, lastName);
+        		Person from = getPersonFromString(firstName, lastName);
         		String preferredName = preference.get(i);
         		if(preferredName.trim().isEmpty()) {
         			//If they have no preference
         			continue;
         		} else {
-        			Person preferredPerson = getPersonFromString(preferredName, lastName);
+        			Person preferredPerson = getPersonFromString(preferredName);
         			if(preferredPerson == null) {
         				//If that person doesn't exist or is weird
         				weirdPreferences.add(preferredName);
         				continue;
         			} else {
-        				from.setPreference(preferredPerson);
+        				from.addPreference(preferredPerson);
         			}
         		}
         	}
         	
-        	System.out.println(weirdPreferences);
+        	generateRoomList();
+        	
+//        	System.out.println(weirdPreferences);
+        	runAlgorithm();
 	        scanner.close();
 	    } 
 	    catch (FileNotFoundException e) {
@@ -148,7 +146,7 @@ public class PreferenceSystem {
 	}
 	
 	public void addPersonToRoom(Room room, Person person) {
-		System.out.println(person.getName());
+//		System.out.println(person.getName());
 		room.addPerson(person);
 		unassignedPeople.remove(person);
 	}
@@ -156,7 +154,7 @@ public class PreferenceSystem {
 	public void createPerson(String firstName, String lastName) {
 		Person newPerson = new Person(firstName, lastName);
 		fullList.add(newPerson);
-		String fullName = firstName;
+		String fullName = full(firstName, lastName);
 		peopleHashMap.put(fullName, newPerson);
 		firstNameMap.put(firstName, newPerson);
 		lastNameMap.put(lastName, newPerson);
@@ -218,7 +216,7 @@ public class PreferenceSystem {
 	}
 	
 	public void addConnection(Person from, Person to) {
-		from.setPreference(to);
+		from.addPreference(to);
 	}
 	
 	public String full(String firstName, String lastName) {
@@ -226,13 +224,13 @@ public class PreferenceSystem {
 	}
 	
 	public Person getPersonFromString(String firstName, String lastName) {
-//		String fullName = full(firstName, lastName);
-		Person person = peopleHashMap.get(firstName);
-		if(person == null) {
-//TODO deal with only first names, try to group same societies together			
-//			for(Person person:)
-		}
-		
+		String fullName = full(firstName, lastName);
+		Person person = peopleHashMap.get(fullName);		
+		return person;
+	}
+	
+	public Person getPersonFromString(String fullName) {
+		Person person = peopleHashMap.get(fullName);		
 		return person;
 	}
 	

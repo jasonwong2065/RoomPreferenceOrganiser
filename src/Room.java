@@ -21,14 +21,28 @@ public class Room implements Comparable<Room>{
 	}
 	
 	public int getHappiness() {
+		happiness = 0;
+		for(Person occupant:occupants) {
+			happiness += occupant.getHappiness();
+		}
 		return happiness;
+	}
+	
+	public ArrayList<Person> getOccupants() {
+		return occupants;
 	}
 	
 	@Override
 	public String toString() {
 		String occupantsString = "Happiness: " + getHappiness() + ", Room occupants:\n";
 		for(Person occupant:occupants) {
-			occupantsString += occupant.getName() + "(" + occupant.getIncomingPreferences().size() + ")" + " -> " + occupant.getPreferenceName() + " Satisfied: " + occupant.isSatisfied() + "\n";
+			if(occupant.getPreferences().size() > 0) {
+				for(Person preference:occupant.getPreferences()) {
+					occupantsString += occupant.getName() + "(" + occupant.getWantedness() + ")" + " -> " + preference.getName() + " Matches: " + occupant.getHappiness() + "\n";
+				}
+			} else {
+				occupantsString += occupant.getName() + "(" + occupant.getWantedness() + ")" + " -> " + "None" + " Matches: " + occupant.getHappiness() + "\n";
+			}
 		}
 		return occupantsString;
 	}
@@ -36,11 +50,11 @@ public class Room implements Comparable<Room>{
 	public int checkHappinessIfAdded(Person other) {
 		int happinessCounter = happiness;
 		for(Person occupant:occupants) {
-			if(occupant.checkSatisfied(other) && !occupant.isSatisfied()) {
+			if(occupant.checkSatisfied(other)) {
 				//If the new person makes existing occupants more happy
 				happinessCounter++;
 			}
-			if(other.checkSatisfied(occupant) && !other.isSatisfied()) {
+			if(other.checkSatisfied(occupant)) {
 				//If the new person is happy because of existing occupants
 				happinessCounter++;
 			}
@@ -53,7 +67,11 @@ public class Room implements Comparable<Room>{
 	}
 	
 	public void addPerson(Person newPerson) {
+		happiness = 0;
 		for(Person occupant:occupants) {
+			happiness += occupant.getHappiness();
+			
+			/*
 			if(occupant.checkSatisfied(newPerson) && !occupant.isSatisfied()) {
 				//If the new person makes existing occupants more happy
 				happiness++;
@@ -63,14 +81,20 @@ public class Room implements Comparable<Room>{
 				//If the new person is happy because of existing occupants
 				happiness++;
 				newPerson.setSatisfied(true);
-			}
+			}*/
 		}
 		occupants.add(newPerson);
-		newPerson.assignRoom(roomName);
+		newPerson.assignRoom(this);
 	}
 	
 	public void removePerson(Person oldOccupant) {
+		oldOccupant.assignRoom(null);
+		occupants.remove(oldOccupant);
+		happiness = 0;
 		for(Person occupant:occupants) {
+			happiness += occupant.getHappiness();
+			/*
+			Old method to get happiness	
 			if(occupant.checkSatisfied(oldOccupant) && occupant.isSatisfied()) {
 				//If current occupants get sad because someone's getting removed
 				happiness--;
@@ -79,10 +103,25 @@ public class Room implements Comparable<Room>{
 				//If the person being removed is sad
 				happiness--;
 			}
+			*/
 		}
-		oldOccupant.assignRoom(null);
-		occupants.remove(oldOccupant);
-		
+	}
+	
+	public int getHappinessIfRemoved(Person person) {
+		int happinessCounter = happiness;
+		for(Person occupant:occupants) {
+			//Decrement happiness counter for each person that gets sad
+			if(occupant == person) {
+				//continue;
+			}
+			if(occupant.checkSatisfied(person)) {
+				happinessCounter--;
+			}
+			if(person.checkSatisfied(occupant)) {
+				happinessCounter--;
+			}
+		}
+		return happinessCounter;
 	}
 
 	public int getRemainingVacancies() {

@@ -2,52 +2,58 @@ import java.util.ArrayList;
 
 
 public class Person{
-	private Person pairingPreference;
-	private boolean satisfied;
+	private ArrayList<Person> preferences;
+	private int happiness;
 	private String fullName;
-	private String assignedRoomName; //Null if not in room
+	private Room assignedRoom; //Null if not in room
 	private ArrayList<Person> incomingPreferences; //Who else wants this person
-	private String firstName;
-	private String lastName;
-	
-	
+	private int wantedness; //How wanted this person is
+
 	public Person(String firstName, String lastName) {
-		this.fullName = firstName;
-		this.satisfied = false;
+		this.preferences= new ArrayList<Person>();
+		this.fullName = firstName+ " " +lastName;
+		this.happiness = 0;
 		this.incomingPreferences = new ArrayList<Person>();
+		this.assignedRoom = null;
+	}
+	
+	public int calculateHappiness(ArrayList<Person> otherGroup) {
+		ArrayList<Person> common = new ArrayList<Person>(otherGroup);
+		common.retainAll(preferences);
+		return common.size();
 	}
 	
 	public boolean checkSatisfied(Person other) {
-		if(this.pairingPreference.equals(other)) {
-			return true;
-		} else {
-			return false;
-		}
+		return preferences.contains(other);
 	}
 	
-	public void setPreference(Person pairingPreference) {
-		this.pairingPreference = pairingPreference;
-		pairingPreference.addIncomingPreferences(this);
+	public int getHappiness() {
+		ArrayList<Person> common = new ArrayList<Person>(assignedRoom.getOccupants());
+		common.retainAll(preferences);
+		happiness = common.size();
+		return happiness;
 	}
 	
-	public void assignRoom(String roomName) {
-		this.assignedRoomName = roomName;
+	public int getWantedness() {
+		wantedness = incomingPreferences.size();
+		return wantedness;
 	}
 	
-	public String getRoomName() {
-		return this.assignedRoomName;
+	public void addPreference(Person preference) {
+		this.preferences.add(preference);
+		preference.addIncomingPreferences(this);
 	}
 	
-	public String getPreferenceName() {
-		return pairingPreference.getName();
+	public void assignRoom(Room room) {
+		this.assignedRoom = room;
 	}
 	
-	public void setSatisfied(Boolean satisfiedStatus) {
-		satisfied = satisfiedStatus;
+	public Room getRoom() {
+		return this.assignedRoom;
 	}
 	
-	public boolean isSatisfied() {
-		return satisfied;
+	public ArrayList<Person> getPreferences() {
+		return preferences;
 	}
 	
 	public String getName() {
@@ -62,11 +68,11 @@ public class Person{
 		incomingPreferences.add(incomingPreference);
 	}
 	
-	public boolean isFirstNameEqual(String name) {
+	/*public boolean isFirstNameEqual(String name) {
 		if(name.equals(firstName)){
 			return true;
 		} else {
 			return false;
 		}
-	}
+	}*/
 }
