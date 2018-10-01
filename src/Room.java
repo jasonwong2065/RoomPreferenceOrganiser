@@ -34,21 +34,34 @@ public class Room implements Comparable<Room>{
 	
 	@Override
 	public String toString() {
-		String occupantsString = "Happiness: " + getHappiness() + ", Room occupants:\n";
+		String occupantsString = this.roomName + " Happiness: " + getHappiness() + ", assigned:\n";
 		for(Person occupant:occupants) {
 			if(occupant.getPreferences().size() > 0) {
+				ArrayList<Person> preferences = occupant.getPreferences();
+				for(int i = 0; i < preferences.size(); i++) {
+					Person preference = preferences.get(i);
+					if(i == 0) {
+						occupantsString += occupant.getName() + "(" + occupant.getWantedness() + ")" + " -> " + preference.getName();
+					}
+					if(i != 0) {
+						occupantsString += ", " + preference.getName();
+					}
+					if(i == preferences.size()-1) {
+						occupantsString += " | Matches: " + occupant.getHappiness() + "\n";
+					}
+				}/*
 				for(Person preference:occupant.getPreferences()) {
 					occupantsString += occupant.getName() + "(" + occupant.getWantedness() + ")" + " -> " + preference.getName() + " Matches: " + occupant.getHappiness() + "\n";
-				}
+				}*/
 			} else {
-				occupantsString += occupant.getName() + "(" + occupant.getWantedness() + ")" + " -> " + "None" + " Matches: " + occupant.getHappiness() + "\n";
+				occupantsString += occupant.getName() + "(" + occupant.getWantedness() + ")" + " -> " + "None" + "\n";
 			}
 		}
 		return occupantsString;
 	}
 	
-	public int checkHappinessIfAdded(Person other) {
-		int happinessCounter = happiness;
+	public int checkHappinessImprovementIfAdded(Person other) {
+		int happinessCounter = 0;
 		for(Person occupant:occupants) {
 			if(occupant.checkSatisfied(other)) {
 				//If the new person makes existing occupants more happy

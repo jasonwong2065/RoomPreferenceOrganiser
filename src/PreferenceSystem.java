@@ -39,7 +39,7 @@ public class PreferenceSystem {
 	}
 	
 	public void scanInput() {
-	    File file = new File("input1.txt");
+	    File file = new File("input2.txt");
 
 	    try {
 
@@ -63,8 +63,16 @@ public class PreferenceSystem {
 
             	firstNames.add(parts[0]);
             	lastNames.add(parts[1]);
-            	preference.add(parts[2]);
-            	preference2.add(parts[3]);
+            	if(parts.length < 3) {
+            		preference.add(""); //Empty preference
+            	} else {
+            		preference.add(parts[2]);
+            	}
+            	if(parts.length < 4) {
+            		preference2.add("");
+            	} else {
+            		preference2.add(parts[3]);
+            	}
 	        }
 
         	for(int i = 0; i < firstNames.size(); i++) {
@@ -95,10 +103,33 @@ public class PreferenceSystem {
         		}
         	}
         	
+        	for(int i = 0; i < preference2.size(); i++) {
+        		//Generates all second preferences
+        		String firstName = firstNames.get(i);
+        		String lastName = lastNames.get(i);
+        		Person from = getPersonFromString(firstName, lastName);
+        		String preferredName = preference2.get(i);
+        		if(preferredName.trim().isEmpty()) {
+        			//If they have no preference
+        			continue;
+        		} else {
+        			Person preferredPerson = getPersonFromString(preferredName);
+        			if(preferredPerson == null) {
+        				//If that person doesn't exist or is weird
+        				weirdPreferences.add(preferredName);
+        				continue;
+        			} else {
+        				from.addPreference(preferredPerson);
+        			}
+        		}
+        	}
+        	
+        	
         	generateRoomList();
         	
-//        	System.out.println(weirdPreferences);
+        	System.out.println("Please check spelling and names: " + weirdPreferences + "\n");
         	runAlgorithm();
+        	System.out.println("Unassigned People: " + unassignedPeople);
 	        scanner.close();
 	    } 
 	    catch (FileNotFoundException e) {
@@ -117,8 +148,43 @@ public class PreferenceSystem {
 				//If there's no more free people
 				break;
 			} else {
-				//If there is a free person, add him and then see who else wants them in their room
-				addPersonToRoom(roomWithMostVacancies, freeMostWantedPerson);
+				//If there is a free person
+				Room assignedRoom = null;
+				ArrayList<Person> incomingPreferences = freeMostWantedPerson.getIncomingPreferences();
+				if(incomingPreferences != null) {
+					//Firstly check if this person is wanted in any rooms
+					for(Person preference:incomingPreferences) {
+						if(preference.getRoom() != null && !preference.getRoom().isFull()) {
+							assignedRoom = preference.getRoom();
+							break;
+						}
+					}
+				}
+				
+				if(assignedRoom == null) {
+					//Strategy 2 of assigning a room
+					Room bestRoom = null;
+					int bestHappiness = 0;
+					for(Room room:roomList) {
+						if(room.isFull()) {
+							continue;
+						}
+						int currHappiness = room.checkHappinessImprovementIfAdded(freeMostWantedPerson);
+						if(currHappiness > bestHappiness) {
+							bestRoom = room;
+							bestHappiness = room.checkHappinessImprovementIfAdded(freeMostWantedPerson);
+						}
+					}
+					assignedRoom = bestRoom;
+				}
+				
+				if(assignedRoom == null) {
+					//If they're not wanted in any rooms, put him in an empty room as a last resort
+					assignedRoom = roomWithMostVacancies;
+				}
+				
+				addPersonToRoom(assignedRoom, freeMostWantedPerson);	
+					
 				ArrayList<Person> groupWithMostWantedPerson = freeMostWantedPerson.getIncomingPreferences();
 				generatePersonPriorityQueue(groupWithMostWantedPerson, true); //Sort incoming preferences from least wanted
 				for(Person person:personPriorityList) {
@@ -127,7 +193,6 @@ public class PreferenceSystem {
 						//If the room wanted is full or if the person wanted is already assigned somewhere
 						break;
 					} else {
-
 						addPersonToRoom(roomWithMostVacancies, person);
 					}
 				}
@@ -203,9 +268,15 @@ public class PreferenceSystem {
 	}
 	
 	public void generateRoomList() {
+		for(int i = 0; i < 7; i++) {
+			int tableNumber = i+1;
+			roomList.add(new Room(10, "Table " + tableNumber));
+		}
+		/*
 		roomList.add(new Room(5, "Room A"));
 		roomList.add(new Room(5, "Room B"));
 		roomList.add(new Room(6, "Room C"));
+		*/
 	}
 	
 	private void generateRoomPriority() {

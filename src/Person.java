@@ -68,6 +68,11 @@ public class Person{
 		incomingPreferences.add(incomingPreference);
 	}
 	
+	@Override
+	public String toString() {
+		return this.getName();
+	}
+	
 	/*public boolean isFirstNameEqual(String name) {
 		if(name.equals(firstName)){
 			return true;
